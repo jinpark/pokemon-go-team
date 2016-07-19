@@ -1,0 +1,73 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+
+    <title></title>
+    <meta name="description" content="">
+    <meta name="author" content="Jin Park">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.css">
+
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.min.js"></script>
+    <style>
+        html {
+            background-image: url("http://1.bp.blogspot.com/-6NONvFrv02I/VtFwFHzdjSI/AAAAAAAAAOU/7gpioMSoW68/s0-r/tiled.jpg");
+            background-repeat: repeat;
+        }
+        .header {
+            text-transform: capitalize;
+        }
+        body {
+            background-color: transparent;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+
+<body data-pokemon="{{ team_json }}" class="ui container">
+
+    <h2 class="ui center aligned icon header">
+      <i class="circular trophy icon"></i>
+      Hall of Fame
+    </h2>
+    <div class="cards-container ui three stackable cards"></div>
+
+    <script id="template" type="text/x-handlebars-template">
+    {% raw %}
+    <div class="ui card">
+      <div class="ui slide masked reveal image">
+        <img src="{{front_default_image}}" class="visible content">
+        <img src="{{back_default_image}}" class="hidden content">
+      </div>
+      <div class="content">
+        <a class="header">{{name}}</a>
+        <div class="meta">
+          <span>CP {{cp}}</span>
+        </div>
+      </div>
+    </div>
+    {% endraw %}
+    </script>
+
+    <script>
+
+    $('document').ready(function(){
+        var pokeapiUrl = "http://pokeapi.co/api/v2/pokemon/";
+        var pokemons = $('body').data('pokemon');
+        var template = $('#template').html();
+        var compiled = Handlebars.compile(template);
+        $.each(pokemons, function(index, value){
+            $.get(pokeapiUrl + value.name, function(response){
+                var rendered = compiled({front_default_image: response.sprites.front_default,  back_default_image: response.sprites.back_default, name: response.name, cp: value.cp});
+                $('.cards-container').append(rendered);
+            })
+        })
+    })
+    </script>
+</body>
+</html>
