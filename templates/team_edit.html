@@ -182,6 +182,7 @@
         })
 
         $('button').on('click', function(){
+            $('this').addClass('loading');
             var pokemons = [];
             var teamHash = $('body').data('team-hash');
             var cards = $('.ui.card');
@@ -209,7 +210,7 @@
             });
             var update = $.post('/team/' + teamHash + '/update', JSON.stringify(pokemons));
             update.success(function(response){
-                window.location('/team/' + teamHash);
+                window.location = '/team/' + teamHash;
             })
         })
 
