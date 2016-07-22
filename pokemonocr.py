@@ -3,20 +3,25 @@ from PIL import Image
 # requires tesseract-ocr
 import pyocr
 import pyocr.builders
+import difflib
 
-TOP_CROP = 0.15
-ROW_SIZE = 0.23
+import pokemondata
+
+TOP_CROP = 0.13644
+ROW_SIZE = 0.232
 COLUMN_SIZE = 0.33
+
+TOOL = pyocr.get_available_tools()[0]
 
 def crop_cp(image):
     img_width = image.size[0]
     img_height = image.size[1]
-    return image.crop((0, 0, img_width, img_height * 0.4))
+    return image.crop((0, 0, img_width, img_height * 0.25))
 
 def crop_name(image):
     img_width = image.size[0]
     img_height = image.size[1]
-    return image.crop((0, img_height * 0.6, img_width, img_height))
+    return image.crop((0, img_height * 0.72, img_width, img_height))
 
 def crop_row(image, row):
     img_width = image.size[0]
@@ -34,10 +39,9 @@ def crop_column(image, column):
 ROWS = 2
 COLUMNS = 3
 
-all_pokemon_text = []
-
 def ocr_image(file):
-    tool = pyocr.get_available_tools()[0]
+    pokemon_dict = {"pokemon": [], "edited": False }
+    all_pokemon_text = []
 
     img = Image.open(file)
     img_width = img.size[0]
@@ -51,16 +55,23 @@ def ocr_image(file):
             column_image = crop_column(row_image, column)
             cp = crop_cp(column_image)
             name = crop_name(column_image)
-            cp_text = tool.image_to_string(
-                cp,
-                lang="eng",
-                builder=pyocr.builders.TextBuilder()
-            )
-            name_text = tool.image_to_string(
+            name_text = TOOL.image_to_string(
                 name,
                 lang="eng",
                 builder=pyocr.builders.TextBuilder()
             )
-            all_pokemon_text.append({"cp": int(max(cp_text.splitlines(), key=len).lower().replace('cp', '').split()[0]), "name": max(name_text.splitlines(), key=len).lower()})
+            cp_text = TOOL.image_to_string(
+                cp,
+                lang="eng",
+                builder=pyocr.builders.TextBuilder()
+            )
+            cp_cleaned_text = "".join([ c if c.isalnum() else "\n" for c in cp_text ])
+            probable_cp = int(max(cp_cleaned_text.splitlines(), key=len).lower().replace('cp', '').split()[0])
+            name_cleaned_text = max(name_text.splitlines(), key=len).lower()
+            probable_name = "".join(name_cleaned_text.split())
+            spell_checked_name = difflib.get_close_matches(probable_name, pokemondata.all_pokemon_names, 1, 0.8) or [probable_name]
 
-    return all_pokemon_text
+            print([probable_cp, spell_checked_name])
+            pokemon_dict["pokemon"].append({"cp": probable_cp, "nickname": spell_checked_name[0]})
+
+    return pokemon_dict

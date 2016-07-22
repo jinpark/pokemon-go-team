@@ -1,0 +1,211 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+
+    <title></title>
+    <meta name="description" content="">
+    <meta name="author" content="Jin Park">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.css">
+
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.min.js"></script>
+    <style>
+        html {
+            background-image: url("http://1.bp.blogspot.com/-6NONvFrv02I/VtFwFHzdjSI/AAAAAAAAAOU/7gpioMSoW68/s0-r/tiled.jpg");
+            background-repeat: repeat;
+        }
+        .header, .species, .options-list {
+            text-transform: capitalize;
+        }
+        body {
+            background-color: transparent;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+
+<body data-pokemon="{{ pokemon }}" data-all-names ="{{ all_pokemon_names }}" data-fast-attacks="{{ fast_attacks }}" data-special-attacks="{{ special_attacks }}" data-team-hash="{{team_hash}}" class="ui container">
+
+    <h2 class="ui center aligned icon header">
+      <i class="circular trophy icon"></i>
+      Hall of Fame
+    </h2>
+    <div class="cards-container ui three stackable cards"></div>
+    <button class="ui primary button">
+      Save
+    </button>
+
+    <script id="template" type="text/x-handlebars-template">
+    {% raw %}
+    <div class="ui card" data-cp="{{cp}}">
+      <div class="ui slide masked reveal image">
+        <img src="{{front_default_image}}" class="visible content">
+        <img src="{{back_default_image}}" class="hidden content">
+      </div>
+      <div class="content">
+        <div class="header">
+            <div class="ui form">
+              <div class="inline field">
+                <label>Nickname</label>
+                <input type="text" class="nickname" value="{{nickname}}">
+                <span class="right floated">
+                    CP {{cp}}
+                </span>
+              </div>
+            </div>
+        </div>
+        <div class="meta species">
+            <div class="ui form">
+              <div class="field">
+              Species:
+              <select class="species-select">
+                  <option value="">???</option>
+                  {{pokemonOpts species pokemonNames}}
+              </select>
+              </div>
+            </div>
+        </div>
+        <div class="ui divider"></div>
+        <div class="ui form">
+          <div class="field">
+            <select class="fast-attack">
+                <option value="">Fast Attack</option>
+                {{pokemonMoveOpts fastAttacks}}
+            </select>
+          </div>
+        </div>
+        <div class="ui divider"></div>
+        <div class="ui form">
+            <div class="field">
+              <select class="special-attack">
+                  <option value="">Special Attack</option>
+                  {{pokemonMoveOpts specialAttacks}}
+              </select>
+            </div>
+        </div>      
+      </div>
+      <div class="extra content">
+        <span class="right floated">
+            CP {{cp}}
+        </span>
+      </div>
+      <div class="ui dimmer">
+          <div class="content">
+            <div class="center">
+              <h2 class="ui inverted icon header">
+                <div class="ui loader"></div>
+                Loading!
+              </h2>
+            </div>
+          </div>
+      </div>
+    </div>
+    {% endraw %}
+    </script>
+
+    <script>
+
+    $('document').ready(function(){
+
+        var pokeapiUrl = "https://pokeapi.co/api/v2/pokemon/";
+        var pokemons = $('body').data('pokemon');
+        var pokemonNames = $('body').data('all-names');
+        var fastAttacks = $('body').data('fast-attacks');
+        var specialAttacks = $('body').data('special-attacks');
+        var template = $('#template').html();
+        var compiled = Handlebars.compile(template);
+
+        Handlebars.registerHelper('pokemonOpts', function(selected, pokemonNames) {
+            var ret = "";
+            for (var i=0; i < pokemonNames.length; i++){
+                var selectedVal = ""; 
+                if(typeof(selected) == "string" && pokemonNames[i] === selected){
+                   selectedVal = "selected";
+                } 
+                ret+="<option class='options-list' "+selectedVal+" value='"+pokemonNames[i]+"'>"+pokemonNames[i]+"</option>";
+            }
+            return new Handlebars.SafeString(ret);
+        });
+
+
+        Handlebars.registerHelper('pokemonMoveOpts', function(pokemonMoves) {
+            var ret = "";
+            for (var i=0; i < pokemonMoves.length; i++){
+                ret+="<option class='options-list' value='"+pokemonMoves[i]['name']+"'>"+pokemonMoves[i]['name'] + " - " + pokemonMoves[i]['type'] +"</option>";
+            }
+            return new Handlebars.SafeString(ret);
+        });
+
+        function attachSelectHandler(card){
+            var $card = $(card);
+            var selectDom = $card.find('.species-select');
+            selectDom.change(function(){
+                var pokemon = $(this).val();
+                var nickname = $card.find('.nickname').val();
+                var cp = $card.data('cp');
+                $card.find('.ui.dimmer').addClass('active');
+                var pokemonInfo = $.get(pokeapiUrl + pokemon);
+                pokemonInfo.success(function(response){
+                    var rendered = compiled({front_default_image: response.sprites.front_default,  back_default_image: response.sprites.back_default, nickname: nickname, species: response.name, cp: cp, pokemonNames: pokemonNames, fastAttacks: fastAttacks, specialAttacks: specialAttacks});
+                    var replaced = $card.html($(rendered).html());
+                    attachSelectHandler(replaced);
+                });
+            })
+        }
+
+        $.each(pokemons, function(index, value){
+            var pokemonInfo = $.get(pokeapiUrl + value.nickname);
+            pokemonInfo.success(function(response){
+                var rendered = compiled({front_default_image: response.sprites.front_default,  back_default_image: response.sprites.back_default, nickname: value.nickname, species: response.name, cp: value.cp, pokemonNames: pokemonNames, fastAttacks: fastAttacks, specialAttacks: specialAttacks});
+                $('.cards-container').append(rendered);
+                attachSelectHandler($('.cards-container').find('.ui.card').last());
+            });
+            pokemonInfo.fail(function(response){
+                var rendered = compiled({front_default_image: 'http://i.imgur.com/yaDE24n.png',  back_default_image: 'http://i.imgur.com/AslgAmV.png', nickname: value.nickname, species: '???', cp: value.cp, pokemonNames: pokemonNames, fastAttacks: fastAttacks, specialAttacks: specialAttacks});
+                $('.cards-container').append(rendered);
+                attachSelectHandler($('.cards-container').find('.ui.card').last());
+            });
+        })
+
+        $('button').on('click', function(){
+            var pokemons = [];
+            var teamHash = $('body').data('team-hash');
+            var cards = $('.ui.card');
+            $.each(cards, function(index, value){
+                var $card = $(value);
+                var nickname = $card.find('.nickname').val();
+                var cp = $card.data('cp');
+                var species = $card.find('.species-select').val();
+                var fastAttack = $card.find('.fast-attack').val();
+                var specialAttack = $card.find('.special-attack').val();
+                pokemons.push({
+                    nickname: nickname,
+                    species: species,
+                    cp: cp,
+                    fast_attack: fastAttack,
+                    special_attack: specialAttack
+                })
+            })
+            console.log(pokemons);
+            var update = $.ajax({
+              url: '/team/' + teamHash + '/update',
+              type: "POST",
+              data: JSON.stringify(pokemons),
+              contentType: "application/json; charset=utf-8",
+              dataType: "json"
+            });
+            // var update = $.post('/team/' + teamHash + '/update', JSON.stringify(pokemons));
+            // update.success(function(response){
+            //     window.location('/team/' + teamHash);
+            // })
+        })
+
+    })
+    </script>
+</body>
+</html>

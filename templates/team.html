@@ -29,27 +29,48 @@
     </style>
 </head>
 
-<body data-pokemon="{{ team_json }}" class="ui container">
+<body data-pokemon="{{ pokemon }}" data-all-names ="{{ all_pokemon_names }}" data-fast-attacks="{{ fast_attacks }}" data-special-attacks="{{ special_attacks }}" class="ui container">
 
     <h2 class="ui center aligned icon header">
       <i class="circular trophy icon"></i>
       Hall of Fame
     </h2>
-    <div class="cards-container ui three stackable cards"></div>
+    <div class="cards-container ui three stackable cards">
+        <div class="ui active dimmer">
+          <div class="content">
+            <div class="center">
+              <h2 class="ui inverted icon header">
+                <div class="ui loader"></div>
+                Loading!
+              </h2>
+            </div>
+          </div>
+        </div>
+    </div>
 
     <script id="template" type="text/x-handlebars-template">
     {% raw %}
-    <div class="ui card">
+    <div class="ui card" data-cp="{{cp}}">
       <div class="ui slide masked reveal image">
         <img src="{{front_default_image}}" class="visible content">
         <img src="{{back_default_image}}" class="hidden content">
       </div>
       <div class="content">
-        <a class="header">{{name}}</a>
-        <div class="meta">
-          <span>CP {{cp}}</span>
+        <div class="header">
+            <div class="ui form">
+              <div class="inline field">
+                <label>Nickname</label>
+                {{nickname}} ({{species}})
+                <span class="right floated">
+                    CP {{cp}}
+                </span>
+              </div>
+            </div>
         </div>
-      </div>
+        <div class="ui divider"></div>
+            Fast Attack: {{fastAttack.name}} ({{fastAttack.type}})
+        <div class="ui divider"></div>
+            Special Attack: {{specialAttack.name}} ({{specialAttack.type}})
     </div>
     {% endraw %}
     </script>
@@ -57,14 +78,25 @@
     <script>
 
     $('document').ready(function(){
+
         var pokeapiUrl = "https://pokeapi.co/api/v2/pokemon/";
         var pokemons = $('body').data('pokemon');
+        var pokemonNames = $('body').data('all-names');
+        var fastAttacks = $('body').data('fast-attacks');
+        var specialAttacks = $('body').data('special-attacks');
         var template = $('#template').html();
         var compiled = Handlebars.compile(template);
+
         $.each(pokemons, function(index, value){
-            $.get(pokeapiUrl + value.name, function(response){
-                var rendered = compiled({front_default_image: response.sprites.front_default,  back_default_image: response.sprites.back_default, name: response.name, cp: value.cp});
+            var pokemonInfo = $.get(pokeapiUrl + value.species);
+            pokemonInfo.success(function(response){
+                var fastAttack = fastAttacks.filter(function(obj){return obj.name == value.fast_attack})[0];
+                var specialAttack = specialAttacks.filter(function(obj){return obj.name == value.special_attack})[0];
+                var rendered = compiled({front_default_image: response.sprites.front_default,  back_default_image: response.sprites.back_default, nickname: value.nickname, species: response.name, cp: value.cp, pokemonNames: pokemonNames, fastAttack: fastAttack, specialAttack: specialAttack});
                 $('.cards-container').append(rendered);
+            });
+            pokemonInfo.always(function(){
+                $('.ui.dimmer').removeClass('active');
             })
         })
     })
