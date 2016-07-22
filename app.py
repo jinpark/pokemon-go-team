@@ -25,7 +25,7 @@ def upload():
     text = ocr_image(file)
     random_key = uuid.uuid4().hex[0:10]
     r.set(random_key, json.dumps(text))
-    return redirect(url_for('team', team_hash=random_key))
+    return redirect(url_for('team_edit', team_hash=random_key))
 
 @app.route("/team/<team_hash>/")
 def team(team_hash):

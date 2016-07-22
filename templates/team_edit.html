@@ -35,8 +35,19 @@
       <i class="circular trophy icon"></i>
       Hall of Fame
     </h2>
-    <div class="cards-container ui three stackable cards"></div>
-    <button class="ui primary button">
+    <div class="cards-container ui three stackable cards">
+        <div class="ui active dimmer">
+          <div class="content">
+            <div class="center">
+              <h2 class="ui inverted icon header">
+                <div class="ui loader"></div>
+                Loading!
+              </h2>
+            </div>
+          </div>
+        </div>
+    </div>
+    <button class="ui primary right floated button">
       Save
     </button>
 
@@ -88,11 +99,6 @@
               </select>
             </div>
         </div>      
-      </div>
-      <div class="extra content">
-        <span class="right floated">
-            CP {{cp}}
-        </span>
       </div>
       <div class="ui dimmer">
           <div class="content">
@@ -170,6 +176,9 @@
                 $('.cards-container').append(rendered);
                 attachSelectHandler($('.cards-container').find('.ui.card').last());
             });
+            pokemonInfo.always(function(){
+                $('.ui.dimmer').removeClass('active');
+            });
         })
 
         $('button').on('click', function(){
@@ -191,7 +200,6 @@
                     special_attack: specialAttack
                 })
             })
-            console.log(pokemons);
             var update = $.ajax({
               url: '/team/' + teamHash + '/update',
               type: "POST",
@@ -199,10 +207,10 @@
               contentType: "application/json; charset=utf-8",
               dataType: "json"
             });
-            // var update = $.post('/team/' + teamHash + '/update', JSON.stringify(pokemons));
-            // update.success(function(response){
-            //     window.location('/team/' + teamHash);
-            // })
+            var update = $.post('/team/' + teamHash + '/update', JSON.stringify(pokemons));
+            update.success(function(response){
+                window.location('/team/' + teamHash);
+            })
         })
 
     })
