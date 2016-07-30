@@ -1,33 +1,6 @@
-<!doctype html>
+{% extends "layout.html" %}
 
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-
-    <title></title>
-    <meta name="description" content="">
-    <meta name="author" content="Jin Park">
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.css">
-
-    <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
-
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.min.js"></script>
-    <style>
-        html {
-            background-image: url("http://1.bp.blogspot.com/-6NONvFrv02I/VtFwFHzdjSI/AAAAAAAAAOU/7gpioMSoW68/s0-r/tiled.jpg");
-            background-repeat: repeat;
-        }
-        .header, .species, .options-list {
-            text-transform: capitalize;
-        }
-        body {
-            background-color: transparent;
-            padding-top: 20px;
-        }
-    </style>
-</head>
+{% block body %}
 
 <body data-pokemon="{{ pokemon }}" data-all-names ="{{ all_pokemon_names }}" data-fast-attacks="{{ fast_attacks }}" data-special-attacks="{{ special_attacks }}" data-team-hash="{{team_hash}}" class="ui container">
 
@@ -98,7 +71,7 @@
                   {{pokemonMoveOpts specialAttacks}}
               </select>
             </div>
-        </div>      
+        </div>
       </div>
       <div class="ui dimmer">
           <div class="content">
@@ -129,10 +102,10 @@
         Handlebars.registerHelper('pokemonOpts', function(selected, pokemonNames) {
             var ret = "";
             for (var i=0; i < pokemonNames.length; i++){
-                var selectedVal = ""; 
+                var selectedVal = "";
                 if(typeof(selected) == "string" && pokemonNames[i] === selected){
                    selectedVal = "selected";
-                } 
+                }
                 ret+="<option class='options-list' "+selectedVal+" value='"+pokemonNames[i]+"'>"+pokemonNames[i]+"</option>";
             }
             return new Handlebars.SafeString(ret);
@@ -216,5 +189,4 @@
 
     })
     </script>
-</body>
-</html>
+{% endblock %}
