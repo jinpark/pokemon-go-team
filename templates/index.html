@@ -1,24 +1,8 @@
-<!doctype html>
+{% extends "layout.html" %}
 
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-
-    <title></title>
-    <meta name="description" content="">
-    <meta name="author" content="Jin Park">
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.2.3/foundation.min.css">
-    <style>
-        .screenshot {
-            max-height: 50vh;
-        }
-    </style>
-</head>
-
-<body>
+{% block body %}
     <center><h1>Share Your TOP Pokemon Team</h1>
-    
+
     <h3>Upload a screenshot of your Pokemon Go Pokemon Screen Sorted by CP</h3>
     <img class="screenshot" src="http://i.imgur.com/3W0qzbR.png" alt="">
 
@@ -30,7 +14,7 @@
     </center>
 
 
-    <script   src="https://code.jquery.com/jquery-2.2.4.min.js"   integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="   crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js"   integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="   crossorigin="anonymous"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.2.3/foundation.js"></script>
-</body>
-</html>
+{% endblock %}
+
